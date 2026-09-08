@@ -95,6 +95,33 @@ typedef struct mcp2515_can_frame
     unsigned char packed_reg[13];
 } mcp2515_can_frame_t;
 
+
+typedef struct can_id_filter
+{
+    unsigned short ID;
+    unsigned char  EXIDE;
+    unsigned int   EID;
+} can_id_filter_t;
+
+typedef struct mcp2515_can_id_filter
+{
+    can_id_filter_t field;  /* each unpacked field member */
+    unsigned char reg[4]; /* packed register format */
+} mcp2515_can_id_filter_t;
+
+typedef struct can_id_mask
+{
+    unsigned short ID;
+    unsigned int EID;
+} can_id_mask_t;
+
+typedef struct mcp2515_id_mask
+{
+    can_id_mask_t field;    /* each unpacked field member */
+    unsigned char reg[4]; /* packed register format */
+} mcp2515_can_id_mask_t;
+
+
 /*
  * platform spi function
  */
@@ -233,10 +260,10 @@ void mcp2515_tx_buf_ctrl_pri_set(unsigned char buf_num, unsigned char buf_pri_se
  */
 unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only, unsigned char data_len, unsigned char data_len_by_received_DLC, mcp2515_can_frame_t *frame);
 
-void mcp2515_rx_filter_set(unsigned char filter_num, unsigned char *filter_value_array);
-void mcp2515_rx_filter_get(unsigned char filter_num, unsigned char *filter_value_array);
-void mcp2515_rx_mask_set(unsigned char mask_num, unsigned char *mask_value_array);
-void mcp2515_rx_mask_get(unsigned char mask_num, unsigned char *mask_value_array);
+void mcp2515_rx_filter_set(unsigned char filter_num, mcp2515_can_id_filter_t *filter);
+void mcp2515_rx_filter_get(unsigned char filter_num, mcp2515_can_id_filter_t *filter);
+void mcp2515_rx_mask_set(unsigned char mask_num, mcp2515_can_id_mask_t *mask);
+void mcp2515_rx_mask_get(unsigned char mask_num, mcp2515_can_id_mask_t *mask);
 
 void mcp2515_interrupt_flag_modify(unsigned char reg_mask, unsigned char reg_data);
 void mcp2515_can_status_reg_get(unsigned char *reg_status);/* read register by general register read command */

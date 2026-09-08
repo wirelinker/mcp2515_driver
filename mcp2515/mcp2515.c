@@ -548,9 +548,9 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
         {
             frame->frame_field.EXIDE = 1;
 
-            frame->frame_field.EID = ((((unsigned int)frame->packed_reg[1]) & 0x3) << 16) |
-                                     (((unsigned int)frame->packed_reg) << 8) |
-                                     ((unsigned int)frame->packed_reg);
+            frame->frame_field.EID = (((unsigned int) ((frame->packed_reg[1]) & 0x3)) << 16) |
+                                     (((unsigned int) ( frame->packed_reg[2])       ) << 8 ) |
+                                     ( (unsigned int) ( frame->packed_reg[3])       );
         }
         if(frame->packed_reg[4] & 0b01000000)
         {
@@ -612,12 +612,16 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
  *
  * For Rx Receive ID Filter
  */
-void mcp2515_rx_filter_set(unsigned char filter_num, unsigned char *filter_value_array)
+void mcp2515_rx_filter_set(unsigned char filter_num, mcp2515_can_id_filter_t *filter)
 {
 
     unsigned char reg_addr;
 
     if(filter_num > 5)
+    {
+        return;
+    }
+    if(filter == NULL)
     {
         return;
     }
@@ -631,20 +635,30 @@ void mcp2515_rx_filter_set(unsigned char filter_num, unsigned char *filter_value
         reg_addr = MCP_RXF3SIDH + (filter_num << 2);
     }
 
-    /* todo: compose packed filter register by arguments */
-    if(filter_value_array != NULL)
+    filter->reg[0] = (unsigned char) (filter->field.ID >> 3);
+    filter->reg[1] = (unsigned char) ((filter->field.ID & 0x7) << 5);
+    if(filter->field.EXIDE)
     {
-        mcp2515_spi_cmd_reg_write(reg_addr, filter_value_array, 4);
+        filter->reg[1] = filter->reg[1] | 0b00001000;
+        filter->reg[1] = filter->reg[1] | (unsigned char)(filter->field.EID >> 16);
+
+        filter->reg[2] = (unsigned char)(filter->field.EID >> 8);
+        filter->reg[3] = (unsigned char)(filter->field.EID);
     }
+    mcp2515_spi_cmd_reg_write(reg_addr, filter->reg, 4);
 
 }
 
-void mcp2515_rx_filter_get(unsigned char filter_num, unsigned char *filter_value_array)
+void mcp2515_rx_filter_get(unsigned char filter_num, mcp2515_can_id_filter_t *filter)
 {
 
     unsigned char reg_addr;
 
     if(filter_num > 5)
+    {
+        return;
+    }
+    if(filter == NULL)
     {
         return;
     }
@@ -658,10 +672,15 @@ void mcp2515_rx_filter_get(unsigned char filter_num, unsigned char *filter_value
         reg_addr = MCP_RXF3SIDH + (filter_num << 2);
     }
 
-    /* todo: parse packed filter register to arguments */
-    if(filter_value_array != NULL)
+    mcp2515_spi_cmd_reg_read(reg_addr, filter->reg, 4);
+
+    filter->field.ID = ((unsigned short)(filter->reg[0] << 3)) | ((unsigned short)(filter->reg[1] >> 5));
+    if(filter->reg[1] & 0b00001000)
     {
-        mcp2515_spi_cmd_reg_read(reg_addr, filter_value_array, 4);
+        filter->field.EXIDE = 1;
+        filter->field.EID = (((unsigned int) (filter->reg[1] & 0x3)) << 16 ) |
+                            (((unsigned int) (filter->reg[2])        << 8) ) |
+                            ( (unsigned int) (filter->reg[3]) );
     }
 
 }
@@ -671,7 +690,7 @@ void mcp2515_rx_filter_get(unsigned char filter_num, unsigned char *filter_value
  *
  * For Rx Receive ID Mask
  */
-void mcp2515_rx_mask_set(unsigned char mask_num, unsigned char *mask_value_array)
+void mcp2515_rx_mask_set(unsigned char mask_num, mcp2515_can_id_mask_t *mask)
 {
 
     unsigned char reg_addr;
@@ -680,18 +699,23 @@ void mcp2515_rx_mask_set(unsigned char mask_num, unsigned char *mask_value_array
     {
         return;
     }
+    if(mask == NULL)
+    {
+        return;
+    }
 
     reg_addr = MCP_RXM0SIDH + mask_num;
 
-    /* todo: compose packed register by arguments */
-    if(mask_value_array != NULL)
-    {
-        mcp2515_spi_cmd_reg_write(reg_addr, mask_value_array, 4);
-    }
+    mask->reg[0] = (unsigned char) (mask->field.ID >> 3);
+    mask->reg[1] = (unsigned char) ((mask->field.ID & 0x7) << 5);
+    mask->reg[1] = mask->reg[1] | (unsigned char)(mask->field.EID >> 16);
+    mask->reg[2] = (unsigned char)(mask->field.EID >> 8);
+    mask->reg[3] = (unsigned char)(mask->field.EID);
 
+    mcp2515_spi_cmd_reg_write(reg_addr, mask->reg, 4);
 }
 
-void mcp2515_rx_mask_get(unsigned char mask_num, unsigned char *mask_value_array)
+void mcp2515_rx_mask_get(unsigned char mask_num, mcp2515_can_id_mask_t *mask)
 {
 
     unsigned char reg_addr;
@@ -700,14 +724,19 @@ void mcp2515_rx_mask_get(unsigned char mask_num, unsigned char *mask_value_array
     {
         return;
     }
+    if(mask == NULL)
+    {
+        return;
+    }
 
     reg_addr = MCP_RXM0SIDH + mask_num;
 
-    /* todo: parse packed register to arguments */
-    if(mask_value_array != NULL)
-    {
-        mcp2515_spi_cmd_reg_read(reg_addr, mask_value_array, 4);
-    }
+    mcp2515_spi_cmd_reg_read(reg_addr, mask->reg, 4);
+
+    mask->field.ID = ((unsigned short)(mask->reg[0] << 3)) | ((unsigned short)(mask->reg[1] >> 5));
+    mask->field.EID = (((unsigned int) (mask->reg[1] & 0x3)) << 16 ) |
+                      (((unsigned int) (mask->reg[2])        << 8) ) |
+                      ( (unsigned int) (mask->reg[3]) );
 
 }
 

@@ -35,6 +35,7 @@ int main() {
     mcp2515_can_status_reg_get(&read_buf);
     printf("MCP2515 status reg = 0b%08b\n", read_buf);
 
+    /* init sent frame data */
     sent_frame.frame_field.ID = 1;
     sent_frame.frame_field.EXIDE = 0;
     sent_frame.frame_field.EID = 0;
@@ -52,6 +53,16 @@ int main() {
             sent_frame.frame_field.DLC = i;
             break;
         }
+    }
+
+    /* init received frame data */
+    received_frame.frame_field.ID = 1;
+    received_frame.frame_field.EXIDE = 0;
+    received_frame.frame_field.EID = 0;
+    received_frame.frame_field.RTR = 0;
+    for(unsigned char j = 0; j < 8; j++)
+    {
+        received_frame.frame_field.data[j] = 0;
     }
 
 
