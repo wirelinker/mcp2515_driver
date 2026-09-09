@@ -91,8 +91,8 @@ typedef struct can_frame
 
 typedef struct mcp2515_can_frame
 {
-    can_frame_t frame_field;
-    unsigned char packed_reg[13];
+    can_frame_t field;
+    unsigned char reg[13];
 } mcp2515_can_frame_t;
 
 
@@ -125,20 +125,7 @@ typedef struct mcp2515_id_mask
 /*
  * platform spi function
  */
-void mcp2515_spi_init(void);
-#ifndef CS_FUNCTION
-#define CS_FUNCTION
-#ifdef PICO_DEFAULT_SPI_CSN_PIN
-static inline void cs_select() {
-    /* CS pin is active low */
-    gpio_put(PICO_DEFAULT_SPI_CSN_PIN, 0);
-}
-
-static inline void cs_unselect() {
-    gpio_put(PICO_DEFAULT_SPI_CSN_PIN, 1);
-}
-#endif
-#endif /* CS_FUNCTION */
+void mcp2515_init(void);
 
 /*
  * MCP2515 spi command function
@@ -276,21 +263,11 @@ void mcp2515_can_ctrl_reg_set(unsigned char reg_mask, unsigned char reg_data);
  * using CAN bus. They also need to prepare their own space for their data to be
  * transmitted or received.
  * */
-//typedef struct mcp2515_frame_t{
-//
-//    /* frame register array */
-//    unsigned char frame[13];
-//
-//} mcp2515_frame_t;
 
+#ifdef MCP2515_RTOS_USAGE
 /* MCP2515 instance struct */
 typedef struct mcp2515_inst {
 
-
-    /*
-    typedef struct mcp2515_frame_t{ unsigned char frame[13]; } mcp2515_frame_t;
-    typedef unsigned char frame[13] mcp2515_frame_t;
-     * */
     /*
     unsigned char can_state;
     unsigned char can_control;
@@ -346,5 +323,6 @@ typedef struct mcp2515_inst {
     /* rx buffer filter and mask*/
 
 } mcp2515_t;
+#endif /* MCP2515_RTOS_USAGE */
 
 #endif /* MCP2515_H */

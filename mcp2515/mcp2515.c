@@ -3,41 +3,13 @@
  * SPDX-License-Identifier: MIT License
  */
 
-
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "hardware/spi.h"
-
+#include "mcp2515_rp2040_stub.h"
 #include "mcp2515.h"
 
-/*
- * platform spi function
- */
-
-void mcp2515_spi_init(void)
+void mcp2515_init(void)
 {
-    unsigned int actual_spi_baud = 0;
-
-    printf("MCP2515 driver start\n");
-
-    /* use 10 MHz spi clock */
-    actual_spi_baud = spi_init(spi_default, 10 * 1000 * 1000);
-    printf("MCP2515 spi baud = %d\n", actual_spi_baud);
-
-    /* set spi pin function*/
-    gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-    gpio_init(PICO_DEFAULT_SPI_CSN_PIN);
-    gpio_set_dir(PICO_DEFAULT_SPI_CSN_PIN, GPIO_OUT);
-    gpio_put(PICO_DEFAULT_SPI_CSN_PIN, 1);
-
-    /* set spi format */
-    /* mode 0,0 or mode 1,1, 8-bits, MSb first */
-    spi_set_format(spi_default, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-
+    SPI_INIT();
 }
-
 
 /*
  * MCP2515 spi command wrapper function
@@ -49,9 +21,9 @@ void mcp2515_spi_cmd_reset(void)
 
     cmd[0] = MCP_SPI_CMD_RESET;
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
-    cs_unselect();
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
+    SPI_CS_UNSELECT();
 }
 
 /*
@@ -71,10 +43,10 @@ unsigned char mcp2515_spi_cmd_reg_read(unsigned char reg_addr, unsigned char *bu
     cmd[0] = MCP_SPI_CMD_READ;
     cmd[1] = reg_addr;
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
-    spi_read_blocking(spi_default, 0x00, buf, len);
-    cs_unselect();
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
+    SPI_READ(buf, len);
+    SPI_CS_UNSELECT();
 
     return len;
 }
@@ -96,10 +68,10 @@ unsigned char mcp2515_spi_cmd_reg_write(unsigned char reg_addr, unsigned char *b
     cmd[0] = MCP_SPI_CMD_WRITE;
     cmd[1] = reg_addr;
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
-    spi_write_blocking(spi_default, (const unsigned char*) buf, len);
-    cs_unselect();
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
+    SPI_WRITE((const unsigned char*) buf, len);
+    SPI_CS_UNSELECT();
 
     return len;
 }
@@ -119,9 +91,9 @@ void mcp2515_spi_cmd_bit_modify(unsigned char reg_addr, unsigned char bit_mask, 
     cmd[2] = bit_mask;
     cmd[3] = data;
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
-    cs_unselect();
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
+    SPI_CS_UNSELECT();
 }
 
 /*
@@ -193,12 +165,12 @@ unsigned char mcp2515_spi_cmd_rx_buf_read(unsigned char buf_num,
 
     printf("start spi rx buf read\n");
     printf("data len=%d\n", data_len);
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
     if(!data_only)
     {
         printf("read frame info\n");
-        spi_read_blocking(spi_default, 0x00, frame_info_ptr, 5);
+        SPI_READ(frame_info_ptr, 5);
     }
 
     if(data_len_by_dlc)
@@ -223,9 +195,9 @@ unsigned char mcp2515_spi_cmd_rx_buf_read(unsigned char buf_num,
     if(data_len)
     {
         printf("read frame data, len= %d\n", data_len);
-        spi_read_blocking(spi_default, 0x00, frame_data_ptr, data_len);
+        SPI_READ(frame_data_ptr, data_len);
     }
-    cs_unselect();
+    SPI_CS_UNSELECT();
     printf("finish read rx buf\n");
 
     if(data_only)
@@ -279,17 +251,17 @@ unsigned char mcp2515_spi_cmd_tx_buf_write(unsigned char buf_num,
         cmd[0] = cmd[0] | 0x1; 
     }
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
     if(data_only)
     {
-        spi_write_blocking(spi_default, (const unsigned char*) (frame + 5), len);
+        SPI_WRITE((const unsigned char*) (frame + 5), len);
     }
     else
     {
-        spi_write_blocking(spi_default, (const unsigned char*) frame, len);
+        SPI_WRITE((const unsigned char*) frame, len);
     }
-    cs_unselect();
+    SPI_CS_UNSELECT();
 
     return len;
 }
@@ -309,9 +281,9 @@ void mcp2515_spi_cmd_tx_rts_set(unsigned char buf_num)
 
     cmd[0] = MCP_SPI_CMD_RTS_TX_BUF | (0x1 << buf_num);
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
-    cs_unselect();
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
+    SPI_CS_UNSELECT();
 }
 
 /*
@@ -328,10 +300,10 @@ unsigned char mcp2515_spi_cmd_quick_status_read(void)
 
     cmd[0] = MCP_SPI_CMD_READ_STATUS;
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
-    spi_read_blocking(spi_default, 0x00, &buf, 1);
-    cs_unselect();
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
+    SPI_READ(&buf, 1);
+    SPI_CS_UNSELECT();
 
     return buf;
 }
@@ -351,10 +323,10 @@ void mcp2515_spi_cmd_quick_rx_status_read(unsigned char* buf)
     }
     cmd[0] = MCP_SPI_CMD_RX_STATUS;
 
-    cs_select();
-    spi_write_blocking(spi_default, (const unsigned char*) cmd, sizeof(cmd));
-    spi_read_blocking(spi_default, 0x00, buf, 1);
-    cs_unselect();
+    SPI_CS_SELECT();
+    SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
+    SPI_READ(buf, 1);
+    SPI_CS_UNSELECT();
 
 }
 
@@ -397,11 +369,11 @@ unsigned char mcp2515_tx_buf_write(unsigned char buf_num, unsigned char data_onl
     {
         return 0;
     }
-    if(frame->frame_field.DLC > 8)
+    if(frame->field.DLC > 8)
     {
         return 0;
     }
-    if((frame->frame_field.DLC == 0) && data_only)
+    if((frame->field.DLC == 0) && data_only)
     {
         return 0;
     }
@@ -410,41 +382,41 @@ unsigned char mcp2515_tx_buf_write(unsigned char buf_num, unsigned char data_onl
     {
         packed_data_len = 5;
 
-        frame->packed_reg[0] = (unsigned char) (frame->frame_field.ID >> 3);
-        frame->packed_reg[1] = (unsigned char) ((frame->frame_field.ID & 0x7) << 5);
-        if(frame->frame_field.EXIDE)
+        frame->reg[0] = (unsigned char) (frame->field.ID >> 3);
+        frame->reg[1] = (unsigned char) ((frame->field.ID & 0x7) << 5);
+        if(frame->field.EXIDE)
         {
-            frame->packed_reg[1] = frame->packed_reg[1] | 0b00001000;
-            frame->packed_reg[1] = frame->packed_reg[1] | (unsigned char)(frame->frame_field.EID >> 16);
+            frame->reg[1] = frame->reg[1] | 0b00001000;
+            frame->reg[1] = frame->reg[1] | (unsigned char)(frame->field.EID >> 16);
 
-            frame->packed_reg[2] = (unsigned char)(frame->frame_field.EID >> 8);
-            frame->packed_reg[3] = (unsigned char)(frame->frame_field.EID);
+            frame->reg[2] = (unsigned char)(frame->field.EID >> 8);
+            frame->reg[3] = (unsigned char)(frame->field.EID);
         }
 
-        if(frame->frame_field.RTR)
+        if(frame->field.RTR)
         {
-            frame->packed_reg[4] = 0b01000000;
+            frame->reg[4] = 0b01000000;
         }
         else
         {
-            frame->packed_reg[4] = frame->frame_field.DLC;
+            frame->reg[4] = frame->field.DLC;
         }
     }
 
-    if(frame->frame_field.DLC)
+    if(frame->field.DLC)
     {
-        packed_data_len = packed_data_len + frame->frame_field.DLC;
-        for(unsigned char i = 0; i < frame->frame_field.DLC; i++)
+        packed_data_len = packed_data_len + frame->field.DLC;
+        for(unsigned char i = 0; i < frame->field.DLC; i++)
         {
-            frame->packed_reg[5 + i] = frame->frame_field.data[i];
+            frame->reg[5 + i] = frame->field.data[i];
         }
     }
 
     if(data_only)
     {
-        return mcp2515_spi_cmd_tx_buf_write(buf_num, &(frame->packed_reg[5]), packed_data_len, data_only);
+        return mcp2515_spi_cmd_tx_buf_write(buf_num, &(frame->reg[5]), packed_data_len, data_only);
     }
-    return mcp2515_spi_cmd_tx_buf_write(buf_num, &(frame->packed_reg[0]), packed_data_len, data_only);
+    return mcp2515_spi_cmd_tx_buf_write(buf_num, &(frame->reg[0]), packed_data_len, data_only);
 }
 
 
@@ -536,32 +508,32 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
     }
 
     printf("spi cmd rx buf read\n");
-    read_reg_len = mcp2515_spi_cmd_rx_buf_read(buf_num, frame->packed_reg, data_len, data_only, data_len_by_received_DLC);
+    read_reg_len = mcp2515_spi_cmd_rx_buf_read(buf_num, frame->reg, data_len, data_only, data_len_by_received_DLC);
 
     if(!data_only)
     {
         printf("not data only\n");
         /* parse the register */
-        frame->frame_field.ID = ((unsigned short)frame->packed_reg[0]) << 3 | ((unsigned short) (frame->packed_reg[1] >> 5));
+        frame->field.ID = ((unsigned short)frame->reg[0]) << 3 | ((unsigned short) (frame->reg[1] >> 5));
 
-        if(frame->packed_reg[1] & 0b00001000)
+        if(frame->reg[1] & 0b00001000)
         {
-            frame->frame_field.EXIDE = 1;
+            frame->field.EXIDE = 1;
 
-            frame->frame_field.EID = (((unsigned int) ((frame->packed_reg[1]) & 0x3)) << 16) |
-                                     (((unsigned int) ( frame->packed_reg[2])       ) << 8 ) |
-                                     ( (unsigned int) ( frame->packed_reg[3])       );
+            frame->field.EID = (((unsigned int) ((frame->reg[1]) & 0x3)) << 16) |
+                               (((unsigned int) ( frame->reg[2])       ) << 8 ) |
+                               ( (unsigned int) ( frame->reg[3])       );
         }
-        if(frame->packed_reg[4] & 0b01000000)
+        if(frame->reg[4] & 0b01000000)
         {
             printf("Frame type = Standard/Extended Remote Frame\n");
-            frame->frame_field.RTR = 1;
+            frame->field.RTR = 1;
         }
         else
         {
             printf("Frame type = Standard/Extended Data Frame\n");
             /* & with 0x0F to make sure the DLC is within 4 bits */
-            frame->frame_field.DLC = frame->packed_reg[4] & 0x0F;
+            frame->field.DLC = frame->reg[4] & 0x0F;
         }
     }
 
@@ -599,7 +571,7 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
         printf("data len = %d\n", read_data_len);
         for(unsigned char i = 0; i < read_data_len; i++)
         {
-            frame->frame_field.data[i] = frame->packed_reg[5 + i];
+            frame->field.data[i] = frame->reg[5 + i];
         }
     }
 
