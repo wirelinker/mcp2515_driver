@@ -18,8 +18,8 @@ int main() {
     unsigned char char_stdio = 0;
     unsigned char quick_status = 0;
     unsigned char frame_count = 0;
-    mcp2515_can_frame_t sent_frame; 
-    mcp2515_can_frame_t received_frame; 
+    mcp2515_can_frame_t sent_frame;
+    mcp2515_can_frame_t received_frame;
 
     stdio_init_all();
 
@@ -55,7 +55,7 @@ int main() {
         }
     }
 
-    
+
 
     /* init received frame data */
     received_frame.field.ID = 1;

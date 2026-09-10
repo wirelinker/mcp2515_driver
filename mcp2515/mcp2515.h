@@ -68,15 +68,15 @@
  * MCP_TXB0SIDL
  * MCP_TXB0EID8
  * MCP_TXB0EID0
- * MCP_TXB0DLC 
- * MCP_TXB0D0  
- * MCP_TXB0D1  
- * MCP_TXB0D2  
- * MCP_TXB0D3  
- * MCP_TXB0D4  
- * MCP_TXB0D5  
- * MCP_TXB0D6  
- * MCP_TXB0D7  
+ * MCP_TXB0DLC
+ * MCP_TXB0D0
+ * MCP_TXB0D1
+ * MCP_TXB0D2
+ * MCP_TXB0D3
+ * MCP_TXB0D4
+ * MCP_TXB0D5
+ * MCP_TXB0D6
+ * MCP_TXB0D7
  */
 
 typedef struct can_frame
@@ -148,7 +148,7 @@ void mcp2515_spi_cmd_tx_rts_set(unsigned char buf_num); /* set tx RTS by SPI cmd
 /*
  * It's a collection of bitfields from different registers.
  * spi cmd status data format
- * 
+ *
  * bit7 = TX2IF (CANINTF[4])  TX2 interrupt flag
  * bit6 = TXREQ (TXB2CTRL[3]) TX2 request to send
  * bit5 = TX1IF (CANINTF[3])  TX1 interrupt flag
@@ -168,7 +168,7 @@ void mcp2515_spi_cmd_tx_rts_set(unsigned char buf_num); /* set tx RTS by SPI cmd
 #define QUICK_STATUS_RX0IF  0b00000001
 unsigned char mcp2515_spi_cmd_quick_status_read(void);
 
-/* 
+/*
  * It's a collection of bitfields from different registers.
  * spi cmd rx status data format
  *

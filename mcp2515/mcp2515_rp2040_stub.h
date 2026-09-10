@@ -15,7 +15,7 @@
 #ifdef PICO_DEFAULT_SPI_CSN_PIN
 #define MCP2515_SPI_CS_PIN (PICO_DEFAULT_SPI_CSN_PIN)
 #elif
-#define MCP2515_SPI_CS_PIN 
+#define MCP2515_SPI_CS_PIN
 #endif
 #define SPI_CS_SELECT()   (gpio_put(MCP2515_SPI_CS_PIN, 0))
 #define SPI_CS_UNSELECT() (gpio_put(MCP2515_SPI_CS_PIN, 1))
@@ -49,7 +49,7 @@ void mcp2515_spi_init(void)
     spi_set_format(MCP2515_SPI_INSTANCE, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 }
 
-#define SPI_WRITE(ptr, len) ( spi_write_blocking(MCP2515_SPI_INSTANCE, (ptr), (len)) ) 
+#define SPI_WRITE(ptr, len) ( spi_write_blocking(MCP2515_SPI_INSTANCE, (ptr), (len)) )
 #define SPI_READ(ptr, len) ( spi_read_blocking(MCP2515_SPI_INSTANCE, 0x00, (ptr), (len)) )
 
 #endif /* MCP2515_RP2040_STUB_H */

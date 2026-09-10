@@ -16,7 +16,7 @@ void mcp2515_init(void)
  */
 void mcp2515_spi_cmd_reset(void)
 {
-    
+
     unsigned char cmd[1] = {0};
 
     cmd[0] = MCP_SPI_CMD_RESET;
@@ -83,7 +83,7 @@ unsigned char mcp2515_spi_cmd_reg_write(unsigned char reg_addr, unsigned char *b
  */
 void mcp2515_spi_cmd_bit_modify(unsigned char reg_addr, unsigned char bit_mask, unsigned char data)
 {
-    
+
     unsigned char cmd[4] = {0};
 
     cmd[0] = MCP_SPI_CMD_BIT_MODIFY;
@@ -138,7 +138,7 @@ unsigned char mcp2515_spi_cmd_rx_buf_read(unsigned char buf_num,
     if( (data_only) && (data_len_by_dlc) )
     {
         /* Must read frame info for DLC,
-         * so must not data_only. 
+         * so must not data_only.
          */
         return 0;
     }
@@ -162,14 +162,10 @@ unsigned char mcp2515_spi_cmd_rx_buf_read(unsigned char buf_num,
         }
     }
 
-
-    printf("start spi rx buf read\n");
-    printf("data len=%d\n", data_len);
     SPI_CS_SELECT();
     SPI_WRITE((const unsigned char*) cmd, sizeof(cmd));
     if(!data_only)
     {
-        printf("read frame info\n");
         SPI_READ(frame_info_ptr, 5);
     }
 
@@ -179,7 +175,7 @@ unsigned char mcp2515_spi_cmd_rx_buf_read(unsigned char buf_num,
         DLC = ( *(frame_info_ptr + 4) ) & 0x0F;
 
         /* must avoid data buffer overflow */
-        /* The DLC field received by CAN controller may not be 
+        /* The DLC field received by CAN controller may not be
          * whthin the standard range (0 <= DLC <= 8).
          */
         if(DLC > 8)
@@ -194,11 +190,9 @@ unsigned char mcp2515_spi_cmd_rx_buf_read(unsigned char buf_num,
 
     if(data_len)
     {
-        printf("read frame data, len= %d\n", data_len);
         SPI_READ(frame_data_ptr, data_len);
     }
     SPI_CS_UNSELECT();
-    printf("finish read rx buf\n");
 
     if(data_only)
     {
@@ -248,7 +242,7 @@ unsigned char mcp2515_spi_cmd_tx_buf_write(unsigned char buf_num,
     cmd[0] = MCP_SPI_CMD_LOAD_TX_BUF_0_SIDH | (buf_num << 0x1);
     if(data_only)
     {
-        cmd[0] = cmd[0] | 0x1; 
+        cmd[0] = cmd[0] | 0x1;
     }
 
     SPI_CS_SELECT();
@@ -507,12 +501,10 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
         return 0;
     }
 
-    printf("spi cmd rx buf read\n");
     read_reg_len = mcp2515_spi_cmd_rx_buf_read(buf_num, frame->reg, data_len, data_only, data_len_by_received_DLC);
 
     if(!data_only)
     {
-        printf("not data only\n");
         /* parse the register */
         frame->field.ID = ((unsigned short)frame->reg[0]) << 3 | ((unsigned short) (frame->reg[1] >> 5));
 
@@ -526,12 +518,10 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
         }
         if(frame->reg[4] & 0b01000000)
         {
-            printf("Frame type = Standard/Extended Remote Frame\n");
             frame->field.RTR = 1;
         }
         else
         {
-            printf("Frame type = Standard/Extended Data Frame\n");
             /* & with 0x0F to make sure the DLC is within 4 bits */
             frame->field.DLC = frame->reg[4] & 0x0F;
         }
@@ -540,7 +530,6 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
 
     if(data_only)
     {
-        printf("data only, read_reg_len= %d", read_reg_len);
         if(read_reg_len < 9)
         {
             read_data_len = read_reg_len;
@@ -568,14 +557,12 @@ unsigned char mcp2515_rx_buf_read(unsigned char buf_num, unsigned char data_only
     /* copy data */
     if(read_data_len)
     {
-        printf("data len = %d\n", read_data_len);
         for(unsigned char i = 0; i < read_data_len; i++)
         {
             frame->field.data[i] = frame->reg[5 + i];
         }
     }
 
-    printf("return read rx buf\n");
     return read_reg_len;
 }
 

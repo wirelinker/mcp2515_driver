@@ -25,7 +25,7 @@
  * 0x0E: CANSTAT - CAN Status Register
  * ========================================================================= */
 /* Bit 7-5: OPMOD[2:0] Operation Mode */
-#define CANSTAT_OPMOD_MASK   0b11100000  
+#define CANSTAT_OPMOD_MASK   0b11100000
 #define CANSTAT_OPMOD_NORM   0b00000000  /* Normal Operation Mode */
 #define CANSTAT_OPMOD_SLEEP  0b00100000  /* Sleep Mode */
 #define CANSTAT_OPMOD_LOOP   0b01000000  /* Loopback Mode */
@@ -33,7 +33,7 @@
 #define CANSTAT_OPMOD_CFG    0b10000000  /* Configuration Mode */
 
 /* Bit 3-1: ICOD[2:0] Interrupt Flag Code */
-#define CANSTAT_ICOD_MASK   0b00001110  
+#define CANSTAT_ICOD_MASK   0b00001110
 #define CANSTAT_ICOD_NONE   0b00000000  /* No Interrupt */
 #define CANSTAT_ICOD_ERR    0b00000010  /* Error Interrupt */
 #define CANSTAT_ICOD_WAK    0b00000100  /* Wake-up Interrupt */
@@ -47,7 +47,7 @@
  * 0x0F: CANCTRL - CAN Control Register
  * ========================================================================= */
 /* Bit 7-5: REQOP[2:0] Request Operation Mode */
-#define CANCTRL_REQOP_MASK   0b11100000  
+#define CANCTRL_REQOP_MASK   0b11100000
 #define CANCTRL_REQOP_NORM   0b00000000  /* Request Normal Mode */
 #define CANCTRL_REQOP_SLEEP  0b00100000  /* Request Sleep Mode */
 #define CANCTRL_REQOP_LOOP   0b01000000  /* Request Loopback Mode */
@@ -59,7 +59,7 @@
 #define CANCTRL_CLKEN       0b00000100  /* CLKOUT Pin Enable */
 
 /* Bit 1-0: CLKPRE[1:0] CLKOUT Pin Prescaler */
-#define CANCTRL_CLKPRE_MASK 0b00000011  
+#define CANCTRL_CLKPRE_MASK 0b00000011
 #define CANCTRL_CLKPRE_DIV1 0b00000000  /* System Clock / 1 */
 #define CANCTRL_CLKPRE_DIV2 0b00000001  /* System Clock / 2 */
 #define CANCTRL_CLKPRE_DIV4 0b00000010  /* System Clock / 4 */
@@ -97,7 +97,7 @@
  * 0x2A: CNF1 - Configuration Register 1
  * ========================================================================= */
 /* Bit 7-6: SJW[1:0] Synchronization Jump Width Length bits */
-#define CNF1_SJW_MASK       0b11000000  
+#define CNF1_SJW_MASK       0b11000000
 #define CNF1_SJW_1TQ        0b00000000  /* 1 x Tq */
 #define CNF1_SJW_2TQ        0b01000000  /* 2 x Tq */
 #define CNF1_SJW_3TQ        0b10000000  /* 3 x Tq */
